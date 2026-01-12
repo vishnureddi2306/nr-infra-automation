@@ -1,0 +1,37 @@
+---
+- name: Install or upgrade New Relic Infrastructure Agent
+  hosts: linux
+  become: yes
+  gather_facts: yes
+
+  vars:
+    nr_license_key: "{{ lookup('env', 'NEW_RELIC_LICENSE_KEY') }}"
+
+  tasks:
+    - name: Validate New Relic license key
+      fail:
+        msg: "NEW_RELIC_LICENSE_KEY is not set"
+      when: nr_license_key is not defined or nr_license_key == ""
+
+    - name: Add New Relic GPG key
+      apt_key:
+        url: https://download.newrelic.com/infrastructure_agent/gpg/newrelic-infra.gpg
+        state: present
+
+    - name: Add New Relic repository
+      apt_repository:
+        repo: "deb https://download.newrelic.com/infrastructure_agent/linux/apt jammy main"
+        state: present
+        filename: newrelic-infra
+
+    - name: Install or upgrade New Relic Infrastructure Agent
+      apt:
+        name: newrelic-infra
+        state: latest
+        update_cache: yes
+
+    - name: Ensure New Relic Infra service is running
+      service:
+        name: newrelic-infra
+        state: started
+        enabled: yes
