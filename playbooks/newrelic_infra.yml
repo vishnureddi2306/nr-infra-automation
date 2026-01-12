@@ -30,6 +30,16 @@
         state: latest
         update_cache: yes
 
+    - name: Configure New Relic Infrastructure Agent license
+      copy:
+        dest: /etc/newrelic-infra.yml
+        content: |
+          license_key: "{{ nr_license_key }}"
+        owner: root
+        group: root
+        mode: '0640'
+
+
     - name: Ensure New Relic Infra service is running
       service:
         name: newrelic-infra
